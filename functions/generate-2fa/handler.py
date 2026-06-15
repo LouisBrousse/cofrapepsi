@@ -4,12 +4,12 @@ import psycopg2
 import os
 
 
-def handle(req):
+def handle(event, context):
     try:
-        body = json.loads(req) if req else {}
+        body = json.loads(event.body) if event.body else {}
         username = body.get("username")
         if not username:
-            return json.dumps({"error": "username required"}), 400
+            return {"statusCode": 400, "body": json.dumps({"error": "username required"})}
 
         totp_secret = pyotp.random_base32()
 
@@ -32,7 +32,7 @@ def handle(req):
             name=username, issuer_name="COFRAP"
         )
 
-        return json.dumps({"username": username, "totp_secret": totp_secret, "totp_uri": totp_uri})
+        return {"statusCode": 200, "body": json.dumps({"username": username, "totp_secret": totp_secret, "totp_uri": totp_uri})}
 
     except Exception as e:
-        return json.dumps({"error": str(e)}), 500
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}

@@ -6,12 +6,12 @@ import os
 import hashlib
 
 
-def handle(req):
+def handle(event, context):
     try:
-        body = json.loads(req) if req else {}
+        body = json.loads(event.body) if event.body else {}
         username = body.get("username")
         if not username:
-            return json.dumps({"error": "username required"}), 400
+            return {"statusCode": 400, "body": json.dumps({"error": "username required"})}
 
         alphabet = string.ascii_letters + string.digits + string.punctuation
         password = ''.join(secrets.choice(alphabet) for _ in range(16))
@@ -33,7 +33,7 @@ def handle(req):
         cur.close()
         conn.close()
 
-        return json.dumps({"username": username, "password": password})
+        return {"statusCode": 200, "body": json.dumps({"username": username, "password": password})}
 
     except Exception as e:
-        return json.dumps({"error": str(e)}), 500
+        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
