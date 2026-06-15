@@ -13,6 +13,8 @@ functions:
       DB_NAME: cofrapdb
       DB_USER: cofrap
       DB_PASSWORD: cofrap2026
+    secrets:
+      - fernet-key
 
   generate-2fa:
     lang: python3-http
@@ -23,6 +25,8 @@ functions:
       DB_NAME: cofrapdb
       DB_USER: cofrap
       DB_PASSWORD: cofrap2026
+    secrets:
+      - fernet-key
 
   authenticate:
     lang: python3-http
@@ -33,3 +37,5 @@ functions:
       DB_NAME: cofrapdb
       DB_USER: cofrap
       DB_PASSWORD: cofrap2026
+    secrets:
+      - fernet-key

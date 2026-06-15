@@ -6,12 +6,13 @@ import time
 from cryptography.fernet import Fernet
 
 
-FERNET_KEY = os.getenv("FERNET_KEY", "").encode()
 SIX_MONTHS_SECONDS = 6 * 30 * 24 * 3600
 
 
 def get_fernet():
-    return Fernet(FERNET_KEY)
+    with open("/var/openfaas/secrets/fernet-key", "r") as f:
+        key = f.read().strip().encode()
+    return Fernet(key)
 
 
 def handle(event, context):
