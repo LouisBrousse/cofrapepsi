@@ -32,16 +32,6 @@ def handle(event, context):
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
         qr_b64 = base64.b64encode(buffer.getvalue()).decode()
-        f = get_fernet()
-        encrypted_secret = f.encrypt(totp_secret.encode()).decode()
-
-        totp_uri = pyotp.totp.TOTP(totp_secret).provisioning_uri(
-            name=username, issuer_name="COFRAP"
-        )
-        img = qrcode.make(totp_uri)
-        buffer = io.BytesIO()
-        img.save(buffer, format="PNG")
-        qr_b64 = base64.b64encode(buffer.getvalue()).decode()
 
         conn = psycopg2.connect(
             host=os.getenv("DB_HOST", "postgres.database.svc.cluster.local"),
@@ -53,17 +43,11 @@ def handle(event, context):
         cur.execute(
             "UPDATE users SET totp_secret = %s WHERE username = %s",
             (encrypted_secret, username)
-            (encrypted_secret, username)
         )
         conn.commit()
         cur.close()
         conn.close()
 
-        return {"statusCode": 200, "body": json.dumps({
-            "username": username,
-            "totp_uri": totp_uri,
-            "qr_code": qr_b64
-        })}
         return {"statusCode": 200, "body": json.dumps({
             "username": username,
             "totp_uri": totp_uri,
