@@ -1,0 +1,35 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://openfaas.local
+
+functions:
+  generate-password:
+    lang: python3-http
+    handler: ./functions/generate-password
+    image: louisb32/generate-password:latest
+    environment:
+      DB_HOST: postgres.database.svc.cluster.local
+      DB_NAME: cofrapdb
+      DB_USER: cofrap
+      DB_PASSWORD: cofrap2026
+
+  generate-2fa:
+    lang: python3-http
+    handler: ./functions/generate-2fa
+    image: louisb32/generate-2fa:latest
+    environment:
+      DB_HOST: postgres.database.svc.cluster.local
+      DB_NAME: cofrapdb
+      DB_USER: cofrap
+      DB_PASSWORD: cofrap2026
+
+  authenticate:
+    lang: python3-http
+    handler: ./functions/authenticate
+    image: louisb32/authenticate:latest
+    environment:
+      DB_HOST: postgres.database.svc.cluster.local
+      DB_NAME: cofrapdb
+      DB_USER: cofrap
+      DB_PASSWORD: cofrap2026
