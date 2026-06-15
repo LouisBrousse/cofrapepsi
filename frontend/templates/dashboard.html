@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord{% endblock %}
+{% block content %}
+<h1>Tableau de bord</h1>
+<div class="success">Connecté en tant que <strong>{{ username }}</strong></div>
+<p style="margin-top:1rem">Authentification réussie — compte actif.</p>
+<div class="actions" style="margin-top:1.5rem">
+  <a href="/logout" class="btn btn-secondary">Se déconnecter</a>
+</div>
+{% endblock %}

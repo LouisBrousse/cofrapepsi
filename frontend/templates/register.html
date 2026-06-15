@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Créer un compte{% endblock %}
+{% block content %}
+<h1>Créer un compte</h1>
+{% if error %}<div class="error">{{ error }}</div>{% endif %}
+<form method="POST">
+  <label for="username">Nom d'utilisateur</label>
+  <input type="text" id="username" name="username" placeholder="ex: jean.dupont" required autofocus>
+  <button type="submit">Générer mon mot de passe</button>
+</form>
+{% endblock %}
