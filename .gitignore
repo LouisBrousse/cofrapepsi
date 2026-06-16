@@ -1,1 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# OpenFaaS build artifacts
+template/
+build/
+
+# Secrets
 SECRETS.md
+
+# OS
+.DS_Store
+Thumbs.db
