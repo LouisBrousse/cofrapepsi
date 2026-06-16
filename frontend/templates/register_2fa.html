@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Configuration 2FA{% endblock %}
 {% block content %}
-<h1>Double authentification</h1>
-<p>Scannez ce QR code avec votre application d'authentification (Google Authenticator, Authy…)</p>
+<div class="card">
+  <div class="steps">
+    <div class="step done"></div>
+    <div class="step done"></div>
+    <div class="step active"></div>
+  </div>
+  <h1 class="card-title">Double authentification</h1>
+  <p class="card-subtitle">Étape 3 — Scannez le QR code avec votre application</p>
 
-<div class="qr-container">
-  <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code 2FA">
-</div>
-<div style="text-align:center; margin-bottom:1rem">
-  <a href="{{ totp_uri }}" class="btn">Ouvrir dans l'application</a>
-</div>
+  <div class="qr-container">
+    <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code 2FA">
+    <a href="{{ totp_uri }}" class="btn btn-ghost">Ouvrir dans l'application</a>
+  </div>
 
-<div class="success">Votre compte <strong>{{ username }}</strong> est activé. Vous pouvez maintenant vous connecter.</div>
+  <div class="alert alert-success">
+    ✓ Compte <strong>{{ username }}</strong> activé. Vous pouvez maintenant vous connecter.
+  </div>
 
-<div class="actions">
-  <a href="/login" class="btn">Se connecter</a>
+  <a href="/login" class="btn btn-primary">Se connecter →</a>
 </div>
 {% endblock %}

@@ -1,19 +1,33 @@
 {% extends "base.html" %}
 {% block title %}Connexion{% endblock %}
 {% block content %}
-<h1>Connexion</h1>
-{% if error %}<div class="error">{{ error }}</div>{% endif %}
-<form method="POST">
-  <label for="username">Nom d'utilisateur</label>
-  <input type="text" id="username" name="username" required autofocus>
+<div class="card">
+  <h1 class="card-title">Connexion</h1>
+  <p class="card-subtitle">Entrez vos identifiants et votre code 2FA</p>
 
-  <label for="password">Mot de passe</label>
-  <input type="password" id="password" name="password" required>
+  {% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
 
-  <label for="totp_code">Code 2FA</label>
-  <input type="text" id="totp_code" name="totp_code" placeholder="6 chiffres" maxlength="6" required>
+  <form method="POST">
+    <label for="username">Nom d'utilisateur</label>
+    <input type="text" id="username" name="username" required autofocus>
 
-  <button type="submit">Se connecter</button>
-</form>
-<p style="margin-top:1rem">Pas encore de compte ? <a href="/register">Créer un compte</a></p>
+    <label for="password">Mot de passe</label>
+    <input type="password" id="password" name="password" required>
+
+    <label for="totp_code">Code 2FA</label>
+    <input type="text" id="totp_code" name="totp_code"
+           placeholder="000000" maxlength="6"
+           style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;"
+           required>
+
+    <button type="submit" class="btn btn-primary">Se connecter</button>
+  </form>
+
+  <hr class="divider">
+  <p style="text-align:center; color: var(--text-muted); font-size:0.9rem">
+    Pas encore de compte ? <a href="/register" class="link">Créer un compte</a>
+  </p>
+</div>
 {% endblock %}

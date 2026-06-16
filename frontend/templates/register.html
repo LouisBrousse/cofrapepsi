@@ -1,11 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Créer un compte{% endblock %}
 {% block content %}
-<h1>Créer un compte</h1>
-{% if error %}<div class="error">{{ error }}</div>{% endif %}
-<form method="POST">
-  <label for="username">Nom d'utilisateur</label>
-  <input type="text" id="username" name="username" placeholder="ex: jean.dupont" required autofocus>
-  <button type="submit">Générer mon mot de passe</button>
-</form>
+<div class="card">
+  <div class="steps">
+    <div class="step active"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+  </div>
+  <h1 class="card-title">Créer un compte</h1>
+  <p class="card-subtitle">Étape 1 — Identifiant</p>
+
+  {% if error %}
+  <div class="alert alert-error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <label for="username">Nom d'utilisateur</label>
+    <input type="text" id="username" name="username" placeholder="ex: jean.dupont" required autofocus>
+    <button type="submit" class="btn btn-primary">Générer mon mot de passe →</button>
+  </form>
+
+  <hr class="divider">
+  <p style="text-align:center; color: var(--text-muted); font-size:0.9rem">
+    Déjà un compte ? <a href="/login" class="link">Se connecter</a>
+  </p>
+</div>
 {% endblock %}

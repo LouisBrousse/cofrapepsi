@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Tableau de bord{% endblock %}
 {% block content %}
-<h1>Tableau de bord</h1>
-<div class="success">Connecté en tant que <strong>{{ username }}</strong></div>
-<p style="margin-top:1rem">Authentification réussie — compte actif.</p>
-<div class="actions" style="margin-top:1.5rem">
-  <a href="/logout" class="btn btn-secondary">Se déconnecter</a>
+<div class="card" style="text-align: center;">
+  <div style="font-size: 3rem; margin-bottom: 1rem;">✓</div>
+  <h1 class="card-title">Authentification réussie</h1>
+  <p class="card-subtitle">Connecté en tant que <strong style="color: var(--text);">{{ username }}</strong></p>
+
+  <div class="alert alert-success">
+    Votre identité a été vérifiée avec succès.
+  </div>
+
+  <a href="/logout" class="btn btn-secondary" style="margin-top: 0.5rem;">Se déconnecter</a>
 </div>
 {% endblock %}

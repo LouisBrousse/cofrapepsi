@@ -4,38 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>COFRAP — {% block title %}{% endblock %}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; }
-    header { background: #1a1a2e; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-    header a { color: white; text-decoration: none; font-weight: bold; }
-    nav a { margin-left: 1rem; color: #aaa; text-decoration: none; }
-    nav a:hover { color: white; }
-    main { max-width: 600px; margin: 3rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    h1 { margin-bottom: 1.5rem; color: #1a1a2e; }
-    label { display: block; margin-bottom: 0.3rem; font-weight: bold; }
-    input { width: 100%; padding: 0.6rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-    button, .btn { display: inline-block; padding: 0.7rem 1.5rem; background: #1a1a2e; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; text-decoration: none; }
-    button:hover, .btn:hover { background: #16213e; }
-    .btn-secondary { background: #666; }
-    .error { background: #ffe0e0; border: 1px solid #f00; padding: 0.7rem; border-radius: 4px; margin-bottom: 1rem; color: #900; }
-    .success { background: #e0ffe0; border: 1px solid #0a0; padding: 0.7rem; border-radius: 4px; margin-bottom: 1rem; color: #060; }
-    .qr-container { text-align: center; margin: 1.5rem 0; }
-    .qr-container img { max-width: 220px; border: 1px solid #ddd; padding: 0.5rem; }
-    .password-box { background: #f0f0f0; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 1rem; word-break: break-all; margin: 1rem 0; }
-    .actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-  </style>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
   <header>
-    <a href="/">COFRAP</a>
+    <a href="/" class="logo">
+      <span class="logo-badge">CF</span>
+      COFRAP
+    </a>
     <nav>
       <a href="/login">Connexion</a>
       <a href="/register">Créer un compte</a>
     </nav>
   </header>
+
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  <footer>
+    COFRAP — Plateforme de gestion des comptes sécurisée · PoC MSPR TPRE921
+  </footer>
 </body>
 </html>
