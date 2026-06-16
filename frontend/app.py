@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory
 import requests
 import os
 
@@ -14,7 +14,6 @@ def call_function(name, payload):
     url = f"{GATEWAY}/function/{name}"
     resp = requests.post(url, json=payload, auth=(GW_USER, GW_PASS), timeout=30)
     return resp.status_code, resp.json()
-
 
 @app.route("/")
 def index():
