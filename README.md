@@ -98,6 +98,13 @@ docker push louisb32/cofrap-frontend:latest
 kubectl rollout restart deployment/frontend -n frontend
 ```
 
+> **Note** : si les modifications ne s'affichent pas, Kubernetes utilise l'image en cache. Forcer le pull avec :
+> ```bash
+> kubectl patch deployment frontend -n frontend \
+>   -p '{"spec":{"template":{"spec":{"containers":[{"name":"frontend","imagePullPolicy":"Always"}]}}}}'
+> kubectl rollout restart deployment/frontend -n frontend
+> ```
+
 ### 4. Vérifier
 
 ```bash

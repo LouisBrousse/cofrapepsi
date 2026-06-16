@@ -162,6 +162,9 @@ input::placeholder {
   background: var(--primary);
   color: white;
   width: 100%;
+}
+
+form .btn-primary {
   margin-top: 0.4rem;
 }
 
