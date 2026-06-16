@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Compte expiré{% endblock %}
+{% block content %}
+<div class="card">
+  <h1 class="card-title">Compte expiré</h1>
+  <p class="card-subtitle">Vos identifiants ont expiré (plus de 6 mois)</p>
+
+  <div class="alert alert-error">
+    Le compte <strong>{{ username }}</strong> doit être renouvelé. Un nouveau mot de passe et un nouveau code 2FA vont être générés.
+  </div>
+
+  <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+    Votre nom d'utilisateur reste le même. Vous devrez reconfigurer votre application d'authentification.
+  </p>
+
+  <form method="POST" action="/renew">
+    <button type="submit" class="btn btn-primary">Renouveler mon compte →</button>
+  </form>
+  <a href="/login" class="btn btn-ghost" style="margin-top: 0.75rem;">Retour à la connexion</a>
+</div>
+{% endblock %}

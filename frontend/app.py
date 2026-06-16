@@ -75,12 +75,49 @@ def login():
             return redirect(url_for("dashboard"))
 
         if data.get("action") == "renew":
-            session["reg_username"] = username
-            return redirect(url_for("register"))
+            session["renew_username"] = username
+            return redirect(url_for("renew"))
 
         return render_template("login.html", error=data.get("error", "Authentification échouée"))
 
     return render_template("login.html")
+
+
+@app.route("/renew", methods=["GET", "POST"])
+def renew():
+    username = session.get("renew_username")
+    if not username:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        status, data = call_function("generate-password", {"username": username})
+        if status != 200:
+            return render_template("renew_expired.html", username=username,
+                                   error=data.get("error", "Erreur serveur"))
+        return render_template("renew_password.html",
+                               username=username,
+                               password=data.get("password"),
+                               qr_code=data.get("qr_code"))
+
+    return render_template("renew_expired.html", username=username)
+
+
+@app.route("/renew/2fa", methods=["POST"])
+def renew_2fa():
+    username = session.get("renew_username")
+    if not username:
+        return redirect(url_for("login"))
+
+    status, data = call_function("generate-2fa", {"username": username})
+    if status != 200:
+        return render_template("renew_password.html", username=username,
+                               error=data.get("error", "Erreur serveur"))
+
+    session.pop("renew_username", None)
+    return render_template("register_2fa.html",
+                           username=username,
+                           totp_uri=data.get("totp_uri"),
+                           qr_code=data.get("qr_code"))
 
 
 @app.route("/dashboard")
