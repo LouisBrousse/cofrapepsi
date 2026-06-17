@@ -12,8 +12,17 @@
 
   <div class="qr-container">
     <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code 2FA">
-    <a href="{{ totp_uri }}" class="btn btn-ghost">Ouvrir dans l'application</a>
+    <a href="{{ totp_uri | safe }}" class="btn btn-ghost">Ouvrir dans l'application</a>
   </div>
+
+  <details style="margin: 1rem 0;">
+    <summary style="cursor:pointer; color: #94a3b8; font-size: 0.875rem;">Saisie manuelle (si le scan échoue)</summary>
+    <div style="margin-top: 0.75rem;">
+      <label style="font-size:0.8rem; color:#64748b;">Clé secrète (Base32)</label>
+      <div class="password-box" style="font-family:monospace; letter-spacing:0.1em;">{{ totp_secret }}</div>
+      <p style="font-size:0.75rem; color:#64748b; margin-top:0.5rem;">Dans Google Authenticator : + → Saisir une clé de configuration → coller cette clé, type "Basé sur l'heure"</p>
+    </div>
+  </details>
 
   <div class="alert alert-success">
     ✓ Compte <strong>{{ username }}</strong> activé. Vous pouvez maintenant vous connecter.

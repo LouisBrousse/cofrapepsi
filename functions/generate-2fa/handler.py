@@ -50,6 +50,7 @@ def handle(event, context):
 
         return {"statusCode": 200, "body": json.dumps({
             "username": username,
+            "totp_secret": totp_secret,
             "totp_uri": totp_uri,
             "qr_code": qr_b64
         })}

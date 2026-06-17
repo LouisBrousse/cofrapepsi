@@ -53,6 +53,7 @@ def register_2fa():
 
     return render_template("register_2fa.html",
                            username=username,
+                           totp_secret=data.get("totp_secret"),
                            totp_uri=data.get("totp_uri"),
                            qr_code=data.get("qr_code"))
 
@@ -116,6 +117,7 @@ def renew_2fa():
     session.pop("renew_username", None)
     return render_template("register_2fa.html",
                            username=username,
+                           totp_secret=data.get("totp_secret"),
                            totp_uri=data.get("totp_uri"),
                            qr_code=data.get("qr_code"))
 

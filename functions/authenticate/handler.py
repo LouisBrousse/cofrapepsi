@@ -87,7 +87,7 @@ def handle(event, context):
             return {"statusCode": 500, "body": json.dumps({"error": "decryption error"})}
 
         totp = pyotp.TOTP(decrypted_totp)
-        if not totp.verify(totp_code):
+        if not totp.verify(totp_code, valid_window=1):
             cur.close()
             conn.close()
             return {"statusCode": 401, "body": json.dumps({"authenticated": False, "error": "invalid totp code"})}
