@@ -137,5 +137,6 @@ kubectl get pods -n openfaas
 |---|---|
 | Frontend | http://cofrap.local |
 | Gateway OpenFaaS | http://openfaas.local |
+| Adminer (DB UI) | http://adminer.local |
 
-> Requiert Tailscale connecté + `cofrap.local` / `openfaas.local` dans `/etc/hosts` → `100.93.122.114`
+> Requiert Tailscale connecté + entrées dans `/etc/hosts` → `100.93.122.114`
