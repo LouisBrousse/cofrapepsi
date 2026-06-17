@@ -8,8 +8,9 @@ Plateforme de gestion des comptes utilisateurs avec génération automatique de 
 - **Serverless** : OpenFaaS Community (via Helm)
 - **Fonctions** : Python 3.12 (template python3-http)
 - **Base de données** : PostgreSQL 15
-- **Frontend** : Flask (SSR)
+- **Frontend** : Flask + Flask-WTF + Flask-Limiter (SSR)
 - **Registre** : Docker Hub (`louisb32/*`)
+- **Réseau** : Tailscale (accès distant) + Traefik Ingress (routage interne)
 
 ---
 
@@ -118,6 +119,18 @@ kubectl get pods -n openfaas
 
 ---
 
+## Sécurité
+
+- **CSRF** : Flask-WTF — token sur tous les formulaires
+- **Rate limiting** : Flask-Limiter — 10 req/min sur login, register, renew
+- **Validation inputs** : username `[a-zA-Z0-9._-]{1,50}`, TOTP exactement 6 chiffres (côté serveur)
+- **Headers HTTP** : CSP, X-Frame-Options, X-Content-Type-Options, X-XSS-Protection
+- **Chiffrement** : Fernet (AES-128 CBC) pour passwords et secrets TOTP en base
+- **Secret Flask** : injecté via K8S secret (`flask-secret`), jamais en dur
+- **TOTP** : `valid_window=1` (±30s de tolérance)
+
+---
+
 ## Accès
 
 | Service | URL |
@@ -125,4 +138,4 @@ kubectl get pods -n openfaas
 | Frontend | http://cofrap.local |
 | Gateway OpenFaaS | http://openfaas.local |
 
-> Requiert `cofrap.local` et `openfaas.local` dans `/etc/hosts` → `100.93.122.114`
+> Requiert Tailscale connecté + `cofrap.local` / `openfaas.local` dans `/etc/hosts` → `100.93.122.114`
