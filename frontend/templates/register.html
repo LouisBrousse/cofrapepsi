@@ -15,8 +15,10 @@
   {% endif %}
 
   <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="username">Nom d'utilisateur</label>
-    <input type="text" id="username" name="username" placeholder="ex: jean.dupont" required autofocus>
+    <input type="text" id="username" name="username" placeholder="ex: jean.dupont"
+           pattern="[a-zA-Z0-9._-]{1,50}" maxlength="50" required autofocus>
     <button type="submit" class="btn btn-primary">Générer mon mot de passe →</button>
   </form>
 

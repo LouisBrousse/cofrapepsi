@@ -1,4 +1,5 @@
 import json
+import re
 import secrets
 import string
 import psycopg2
@@ -8,6 +9,8 @@ import io
 import time
 import qrcode
 from cryptography.fernet import Fernet
+
+USERNAME_RE = re.compile(r'^[a-zA-Z0-9._-]{1,50}$')
 
 
 def get_fernet():
@@ -19,9 +22,10 @@ def get_fernet():
 def handle(event, context):
     try:
         body = json.loads(event.body) if event.body else {}
-        username = body.get("username")
-        if not username:
-            return {"statusCode": 400, "body": json.dumps({"error": "username required"})}
+        username = body.get("username", "")
+
+        if not USERNAME_RE.match(str(username)):
+            return {"statusCode": 400, "body": json.dumps({"error": "invalid username"})}
 
         alphabet = string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation
         while True:
@@ -66,5 +70,5 @@ def handle(event, context):
             "qr_code": qr_b64
         })}
 
-    except Exception as e:
-        return {"statusCode": 500, "body": json.dumps({"error": str(e)})}
+    except Exception:
+        return {"statusCode": 500, "body": json.dumps({"error": "internal server error"})}

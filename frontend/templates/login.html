@@ -10,15 +10,16 @@
   {% endif %}
 
   <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="username">Nom d'utilisateur</label>
-    <input type="text" id="username" name="username" required autofocus>
+    <input type="text" id="username" name="username" maxlength="50" required autofocus>
 
     <label for="password">Mot de passe</label>
-    <input type="password" id="password" name="password" required>
+    <input type="password" id="password" name="password" maxlength="128" required>
 
     <label for="totp_code">Code 2FA</label>
     <input type="text" id="totp_code" name="totp_code"
-           placeholder="000000" maxlength="6"
+           placeholder="000000" maxlength="6" pattern="\d{6}" inputmode="numeric"
            style="letter-spacing: 0.3em; font-size: 1.2rem; text-align: center;"
            required>
 
