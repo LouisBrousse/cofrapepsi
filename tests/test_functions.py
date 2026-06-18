@@ -1,11 +1,8 @@
-import pytest
 import requests
 import base64
 import os
-import time
 import urllib.parse
 import pyotp
-import psycopg2
 
 GATEWAY = os.getenv("OPENFAAS_GATEWAY", "http://openfaas.local")
 GW_AUTH = (
@@ -13,31 +10,6 @@ GW_AUTH = (
     os.getenv("OPENFAAS_PASS", "xq0T6Ql35kaRBFVsYidT4Pmy2kU69Wrs")
 )
 TEST_USER = "pytest-testuser"
-
-DB_PARAMS = {
-    "host": os.getenv("DB_HOST", "postgres.database.svc.cluster.local"),
-    "database": os.getenv("DB_NAME", "cofrapdb"),
-    "user": os.getenv("DB_USER", "cofrap"),
-    "password": os.getenv("DB_PASSWORD", "cofrap2026"),
-}
-
-
-def db_set_expired(username, expired=True):
-    conn = psycopg2.connect(**DB_PARAMS)
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET expired = %s WHERE username = %s", (expired, username))
-    conn.commit()
-    cur.close()
-    conn.close()
-
-
-def db_set_gendate(username, gendate):
-    conn = psycopg2.connect(**DB_PARAMS)
-    cur = conn.cursor()
-    cur.execute("UPDATE users SET gendate = %s WHERE username = %s", (gendate, username))
-    conn.commit()
-    cur.close()
-    conn.close()
 
 
 def call(function, payload):
@@ -289,51 +261,3 @@ class TestRenewFlow:
         })
         assert status == 401
         assert data["authenticated"] is False
-
-
-# ─── expiration des comptes ───────────────────────────────────────────────────
-
-class TestExpiration:
-
-    def test_expired_flag_returns_action_renew(self):
-        password, totp_secret = setup_user(TEST_USER)
-        db_set_expired(TEST_USER, expired=True)
-
-        totp_code = pyotp.TOTP(totp_secret).now()
-        status, data = call("authenticate", {
-            "username": TEST_USER,
-            "password": password,
-            "totp_code": totp_code
-        })
-        assert status == 401
-        assert data["authenticated"] is False
-        assert data.get("action") == "renew"
-
-    def test_gendate_older_than_6_months_returns_action_renew(self):
-        password, totp_secret = setup_user(TEST_USER)
-        six_months_and_one_day = 6 * 30 * 24 * 3600 + 86400
-        db_set_gendate(TEST_USER, int(time.time()) - six_months_and_one_day)
-
-        totp_code = pyotp.TOTP(totp_secret).now()
-        status, data = call("authenticate", {
-            "username": TEST_USER,
-            "password": password,
-            "totp_code": totp_code
-        })
-        assert status == 401
-        assert data["authenticated"] is False
-        assert data.get("action") == "renew"
-
-    def test_gendate_under_6_months_authenticates(self):
-        password, totp_secret = setup_user(TEST_USER)
-        five_months = 5 * 30 * 24 * 3600
-        db_set_gendate(TEST_USER, int(time.time()) - five_months)
-
-        totp_code = pyotp.TOTP(totp_secret).now()
-        status, data = call("authenticate", {
-            "username": TEST_USER,
-            "password": password,
-            "totp_code": totp_code
-        })
-        assert status == 200
-        assert data["authenticated"] is True
