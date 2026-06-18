@@ -1,3 +1,4 @@
 pytest
 requests
 pyotp
+psycopg2-binary

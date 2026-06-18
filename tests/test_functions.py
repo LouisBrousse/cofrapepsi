@@ -2,8 +2,10 @@ import pytest
 import requests
 import base64
 import os
+import time
 import urllib.parse
 import pyotp
+import psycopg2
 
 GATEWAY = os.getenv("OPENFAAS_GATEWAY", "http://openfaas.local")
 GW_AUTH = (
@@ -11,6 +13,31 @@ GW_AUTH = (
     os.getenv("OPENFAAS_PASS", "xq0T6Ql35kaRBFVsYidT4Pmy2kU69Wrs")
 )
 TEST_USER = "pytest-testuser"
+
+DB_PARAMS = {
+    "host": os.getenv("DB_HOST", "postgres.database.svc.cluster.local"),
+    "database": os.getenv("DB_NAME", "cofrapdb"),
+    "user": os.getenv("DB_USER", "cofrap"),
+    "password": os.getenv("DB_PASSWORD", "cofrap2026"),
+}
+
+
+def db_set_expired(username, expired=True):
+    conn = psycopg2.connect(**DB_PARAMS)
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET expired = %s WHERE username = %s", (expired, username))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def db_set_gendate(username, gendate):
+    conn = psycopg2.connect(**DB_PARAMS)
+    cur = conn.cursor()
+    cur.execute("UPDATE users SET gendate = %s WHERE username = %s", (gendate, username))
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
 def call(function, payload):
@@ -61,6 +88,23 @@ class TestGeneratePassword:
         _, data = call("generate-password", {"username": TEST_USER})
         assert data["username"] == TEST_USER
 
+    def test_invalid_username_returns_400(self):
+        for bad in ["", "user name", "a" * 51, "user@domain", "../../etc"]:
+            status, _ = call("generate-password", {"username": bad})
+            assert status == 400, f"attendu 400 pour username={bad!r}"
+
+    def test_password_chars_are_valid(self):
+        import string
+        alphabet = set(string.ascii_uppercase + string.ascii_lowercase + string.digits + string.punctuation)
+        _, data = call("generate-password", {"username": TEST_USER})
+        for c in data["password"]:
+            assert c in alphabet, f"caractère inattendu : {c!r}"
+
+    def test_passwords_are_unique(self):
+        _, d1 = call("generate-password", {"username": TEST_USER})
+        _, d2 = call("generate-password", {"username": TEST_USER})
+        assert d1["password"] != d2["password"], "deux appels successifs ont retourné le même mot de passe"
+
 
 # ─── generate-2fa ────────────────────────────────────────────────────────────
 
@@ -92,6 +136,20 @@ class TestGenerate2FA:
     def test_missing_username_returns_400(self):
         status, _ = call("generate-2fa", {})
         assert status == 400
+
+    def test_invalid_username_returns_400(self):
+        for bad in ["", "user name", "a" * 51, "user@domain"]:
+            status, _ = call("generate-2fa", {"username": bad})
+            assert status == 400, f"attendu 400 pour username={bad!r}"
+
+    def test_totp_secret_present(self):
+        _, data = call("generate-2fa", {"username": TEST_USER})
+        assert "totp_secret" in data
+        assert len(data["totp_secret"]) > 0
+
+    def test_totp_uri_contains_username(self):
+        _, data = call("generate-2fa", {"username": TEST_USER})
+        assert TEST_USER in data["totp_uri"]
 
 
 # ─── authenticate ────────────────────────────────────────────────────────────
@@ -159,6 +217,31 @@ class TestAuthenticate:
         assert data["authenticated"] is True
         assert data["username"] == TEST_USER
 
+    def test_invalid_username_returns_400(self):
+        status, _ = call("authenticate", {
+            "username": "user name",
+            "password": "whatever",
+            "totp_code": "123456"
+        })
+        assert status == 400
+
+    def test_invalid_totp_format_returns_400(self):
+        for bad_totp in ["12345", "1234567", "abcdef", "", "12 345"]:
+            status, _ = call("authenticate", {
+                "username": TEST_USER,
+                "password": "whatever",
+                "totp_code": bad_totp
+            })
+            assert status == 400, f"attendu 400 pour totp_code={bad_totp!r}"
+
+    def test_password_too_long_returns_400(self):
+        status, _ = call("authenticate", {
+            "username": TEST_USER,
+            "password": "a" * 129,
+            "totp_code": "123456"
+        })
+        assert status == 400
+
 
 # ─── renouvellement de compte ────────────────────────────────────────────────
 
@@ -194,3 +277,63 @@ class TestRenewFlow:
         })
         assert status == 401
         assert data["authenticated"] is False
+
+    def test_old_totp_rejected_after_renewal(self):
+        _, old_totp_secret = setup_user(TEST_USER)
+        new_password, _ = setup_user(TEST_USER)
+        old_totp_code = pyotp.TOTP(old_totp_secret).now()
+        status, data = call("authenticate", {
+            "username": TEST_USER,
+            "password": new_password,
+            "totp_code": old_totp_code
+        })
+        assert status == 401
+        assert data["authenticated"] is False
+
+
+# ─── expiration des comptes ───────────────────────────────────────────────────
+
+class TestExpiration:
+
+    def test_expired_flag_returns_action_renew(self):
+        password, totp_secret = setup_user(TEST_USER)
+        db_set_expired(TEST_USER, expired=True)
+
+        totp_code = pyotp.TOTP(totp_secret).now()
+        status, data = call("authenticate", {
+            "username": TEST_USER,
+            "password": password,
+            "totp_code": totp_code
+        })
+        assert status == 401
+        assert data["authenticated"] is False
+        assert data.get("action") == "renew"
+
+    def test_gendate_older_than_6_months_returns_action_renew(self):
+        password, totp_secret = setup_user(TEST_USER)
+        six_months_and_one_day = 6 * 30 * 24 * 3600 + 86400
+        db_set_gendate(TEST_USER, int(time.time()) - six_months_and_one_day)
+
+        totp_code = pyotp.TOTP(totp_secret).now()
+        status, data = call("authenticate", {
+            "username": TEST_USER,
+            "password": password,
+            "totp_code": totp_code
+        })
+        assert status == 401
+        assert data["authenticated"] is False
+        assert data.get("action") == "renew"
+
+    def test_gendate_under_6_months_authenticates(self):
+        password, totp_secret = setup_user(TEST_USER)
+        five_months = 5 * 30 * 24 * 3600
+        db_set_gendate(TEST_USER, int(time.time()) - five_months)
+
+        totp_code = pyotp.TOTP(totp_secret).now()
+        status, data = call("authenticate", {
+            "username": TEST_USER,
+            "password": password,
+            "totp_code": totp_code
+        })
+        assert status == 200
+        assert data["authenticated"] is True
