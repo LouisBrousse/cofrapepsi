@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: louisb32/cofrap-frontend:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: OPENFAAS_GATEWAY
+          value: "http://gateway.openfaas.svc.cluster.local:8080"
+        - name: OPENFAAS_USER
+          value: "admin"
+        - name: OPENFAAS_PASS
+          valueFrom:
+            secretKeyRef:
+              name: openfaas-basic-auth
+              key: basic-auth-password
+        - name: FLASK_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: flask-secret
+              key: FLASK_SECRET
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 5000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  namespace: frontend
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+  - host: cofrap.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
