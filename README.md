@@ -65,56 +65,58 @@ Accessible via Tailscale : `https://100.118.81.73:8006`
 
 ## Workflow de mise à jour
 
+> Prérequis : Tailscale connecté, `openfaas.local` dans `/etc/hosts` local → `100.93.122.114`.
+
 ### 1. Modifier le code en local
 
 ```bash
 # Modifier les fichiers dans functions/ ou frontend/
-# Puis pousser sur GitHub
-git add .
-git commit -m "feat: description du changement"
-git push origin main
 ```
 
-### 2. Mettre à jour sur le serveur
-
-Se connecter au control-plane (`k3s-master`) et aller dans le repo :
-
-```bash
-cd ~/cofrapepsi && git pull
-```
-
-### 3a. Redéployer les fonctions OpenFaaS
+### 2a. Redéployer les fonctions OpenFaaS (depuis ton poste local)
 
 ```bash
 faas-cli build -f stack.yml
 faas-cli push -f stack.yml
-faas-cli deploy -f stack.yml
+faas-cli deploy -f stack.yml --gateway http://openfaas.local
 ```
 
-### 3b. Redéployer le frontend
+### 2b. Redéployer le frontend (depuis ton poste local)
 
 ```bash
 docker build -t louisb32/cofrap-frontend:latest ./frontend/
 docker push louisb32/cofrap-frontend:latest
-kubectl rollout restart deployment/frontend -n frontend
+```
+
+Puis redémarrer le déploiement depuis le control-plane :
+
+```bash
+ssh louis@100.93.122.114 "kubectl rollout restart deployment/frontend -n frontend"
 ```
 
 > **Note** : si les modifications ne s'affichent pas, Kubernetes utilise l'image en cache. Forcer le pull avec :
 > ```bash
-> kubectl patch deployment frontend -n frontend \
->   -p '{"spec":{"template":{"spec":{"containers":[{"name":"frontend","imagePullPolicy":"Always"}]}}}}'
-> kubectl rollout restart deployment/frontend -n frontend
+> ssh louis@100.93.122.114 "kubectl patch deployment frontend -n frontend \
+>   -p '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"frontend\",\"imagePullPolicy\":\"Always\"}]}}}}' \
+>   && kubectl rollout restart deployment/frontend -n frontend"
 > ```
 
-### 4. Vérifier
+### 3. Vérifier (depuis ton poste local)
 
 ```bash
 # État des fonctions
 faas-cli list --gateway http://openfaas.local
 
-# État des pods
-kubectl get pods -n frontend
-kubectl get pods -n openfaas
+# État des pods (depuis le master via SSH)
+ssh louis@100.93.122.114 "kubectl get pods -n frontend && kubectl get pods -n openfaas"
+```
+
+### Sauvegarder sur GitHub
+
+```bash
+git add .
+git commit -m "feat: description du changement"
+git push origin main
 ```
 
 ---
